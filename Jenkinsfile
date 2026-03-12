@@ -22,7 +22,7 @@ pipeline {
             steps {
                 script {
                     dir('terraform') {
-                        git url: 'https://github.com/ManojKRISHNAPPA/SnakeGame.git', branch: 'terraform'
+                        git url: 'https://github.com/ITkannadigaru/Infrastructure.git', branch: 'terraform'
                     }
                 }
             }
@@ -30,18 +30,18 @@ pipeline {
 
         stage('Plan: All Layers') {
             steps {
-                sh 'cd terraform/src/InfraStructure/0-bootstrap && terraform init -input=false && terraform plan -out tfplan && terraform show -no-color tfplan > tfplan.txt'
-                sh 'cd terraform/src/InfraStructure/1-network && terraform init -input=false && terraform plan -out tfplan && terraform show -no-color tfplan > tfplan.txt'
-                sh 'cd terraform/src/InfraStructure/2-eks && terraform init -input=false && terraform plan -out tfplan && terraform show -no-color tfplan > tfplan.txt'
+                sh 'cd terraform/0-bootstrap && terraform init -input=false && terraform plan -out tfplan && terraform show -no-color tfplan > tfplan.txt'
+                sh 'cd terraform/1-network && terraform init -input=false && terraform plan -out tfplan && terraform show -no-color tfplan > tfplan.txt'
+                sh 'cd terraform/2-eks && terraform init -input=false && terraform plan -out tfplan && terraform show -no-color tfplan > tfplan.txt'
             }
         }
 
         stage('Approval') {
             steps {
                 script {
-                    def bootstrap = readFile 'terraform/src/InfraStructure/0-bootstrap/tfplan.txt'
-                    def network   = readFile 'terraform/src/InfraStructure/1-network/tfplan.txt'
-                    def eks       = readFile 'terraform/src/InfraStructure/2-eks/tfplan.txt'
+                    def bootstrap = readFile 'terraform/0-bootstrap/tfplan.txt'
+                    def network   = readFile 'terraform/1-network/tfplan.txt'
+                    def eks       = readFile 'terraform/2-eks/tfplan.txt'
                     def allPlans  = "=== 0-bootstrap ===\n${bootstrap}\n=== 1-network ===\n${network}\n=== 2-eks ===\n${eks}"
                     input message: 'Review all layer plans and approve to proceed',
                           parameters: [text(name: 'Plan', description: 'Terraform Plan Output', defaultValue: allPlans)]
@@ -53,9 +53,9 @@ pipeline {
             steps {
                 script {
                     if (params.terraformAction == 'apply') {
-                        sh 'cd terraform/src/InfraStructure/0-bootstrap && terraform apply -input=false tfplan'
+                        sh 'cd terraform/0-bootstrap && terraform apply -input=false tfplan'
                     } else {
-                        sh 'cd terraform/src/InfraStructure/0-bootstrap && terraform destroy -auto-approve'
+                        sh 'cd terraform/0-bootstrap && terraform destroy -auto-approve'
                     }
                 }
             }
@@ -65,9 +65,9 @@ pipeline {
             steps {
                 script {
                     if (params.terraformAction == 'apply') {
-                        sh 'cd terraform/src/InfraStructure/1-network && terraform apply -input=false tfplan'
+                        sh 'cd terraform/1-network && terraform apply -input=false tfplan'
                     } else {
-                        sh 'cd terraform/src/InfraStructure/1-network && terraform destroy -auto-approve'
+                        sh 'cd terraform/1-network && terraform destroy -auto-approve'
                     }
                 }
             }
@@ -77,9 +77,9 @@ pipeline {
             steps {
                 script {
                     if (params.terraformAction == 'apply') {
-                        sh 'cd terraform/src/InfraStructure/2-eks && terraform apply -input=false tfplan'
+                        sh 'cd terraform/2-eks && terraform apply -input=false tfplan'
                     } else {
-                        sh 'cd terraform/src/InfraStructure/2-eks && terraform destroy -auto-approve'
+                        sh 'cd terraform/2-eks && terraform destroy -auto-approve'
                     }
                 }
             }

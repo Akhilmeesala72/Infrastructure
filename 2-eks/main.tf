@@ -33,6 +33,11 @@ module "eks" {
       desired_size   = 2
 
       subnet_ids = local.private_subnet_ids
+
+      remote_access = {
+        ec2_ssh_key               = var.ssh_key_name
+        source_security_group_ids = []
+      }
     }
   }
 
